@@ -57,7 +57,7 @@ class LiquiAPITrading {
     public function getBalances() {
         $info = $this->getInfo();
         if ($info['success'] == 1) {
-            return array_filter($info['return']['funds'], function($amount) {
+            return array_filter($info['return']['funds'], function ($amount) {
                 return $amount > 0.0;
             });
         }
