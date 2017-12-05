@@ -38,13 +38,6 @@ class Request {
     private $apiVersion = 3;
 
     /**
-     * cURL handle.
-     *
-     * @var resource
-     */
-    private static $ch = null;
-
-    /**
      * Initiates Liqui API object for trading methods.
      *
      * @param string $apiKey Liqui API Key value
@@ -76,36 +69,34 @@ class Request {
         $params = http_build_query($params);
 
         // curl handle (initialize if required)
-        if (is_null(self::$ch)) {
-            self::$ch = curl_init();
-        }
+        $ch = curl_init();
 
         curl_setopt(
-            self::$ch, CURLOPT_URL,
+            $ch, CURLOPT_URL,
             LiquiAPIConf::getAPIUrl(LiquiAPIConf::API_TYPE_TRADING, $this->apiVersion)
         );
-        curl_setopt(self::$ch, CURLOPT_CONNECTTIMEOUT, 10);
-        curl_setopt(self::$ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
         if ($method === 'POST') {
-            curl_setopt(self::$ch, CURLOPT_POST, true);
-            curl_setopt(self::$ch, CURLOPT_POSTFIELDS, $params);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
         }
 
-        curl_setopt(self::$ch, CURLOPT_HTTPHEADER, [
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
             'Key: ' . $this->apiKey,
             'Sign: ' . hash_hmac('sha512', "$params", $this->apiSecret)
         ]);
 
         // run the query
-        $res = curl_exec(self::$ch);
+        $res = curl_exec($ch);
         if ($res === false) {
-            $e = curl_error(self::$ch);
-            curl_close(self::$ch);
+            $e = curl_error($ch);
+            curl_close($ch);
 
             throw new \Exception("Curl error: " . $e);
         }
-        curl_close(self::$ch);
+        curl_close($ch);
 
         $json = json_decode($res, true);
 
